@@ -1,0 +1,26 @@
+
+🔍 Key Differences
+
+| Feature           | `database/sql`                   | `GORM`                                |
+| ----------------- | -------------------------------- | ------------------------------------- |
+| Connection Syntax | Raw DSN                          | DSN with GORM config                  |
+| Query Style       | Manual SQL string                | ORM-style method calls (`Find`, etc.) |
+| Struct Mapping    | Manual with `Scan`               | Automatic via model struct            |
+| Performance       | Slightly faster                  | Slightly slower (more abstraction)    |
+| Migrations        | No                               | Yes (`AutoMigrate`)                   |
+| Ideal for         | Lightweight control, performance | Rapid development, complex models     |
+
+
+🧠 Summary
+| Operation | `database/sql`                 | `GORM`                                   |
+| --------- | ------------------------------ | ---------------------------------------- |
+| Insert    | `Exec("INSERT INTO ...", val)` | `db.Create(&obj)`                        |
+| Update    | `Exec("UPDATE ... WHERE ...")` | `db.Save(&obj)` or `db.Model().Update()` |
+
+
+🧠 Summary Table
+| Feature      | `database/sql`                           | `GORM`                                    |
+| ------------ | ---------------------------------------- | ----------------------------------------- |
+| Delete       | `Exec("DELETE FROM ...")`                | `db.Delete(&obj, id)`                     |
+| Batch Insert | Prepared `Exec` loop                     | `db.Create([]obj)`                        |
+| Transactions | `db.Begin()`, `tx.Exec()`, `tx.Commit()` | `db.Transaction(func(tx *gorm.DB) {...})` |
