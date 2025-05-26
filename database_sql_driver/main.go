@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -17,6 +18,12 @@ func main() {
 		log.Print("successfully connected to db")
 	}
 	defer db.Close()
+
+	// Check the connection
+	if err := db.Ping(); err != nil {
+		log.Fatal("Ping failed:", err)
+	}
+	fmt.Println("Successfully connected to DB")
 
 	// INSERT
 	insertStmt := "INSERT INTO scores (message) VALUES (?)"
@@ -88,5 +95,56 @@ func main() {
 		log.Fatal("Commit failed:", err)
 	}
 	fmt.Println("Transaction committed successfully")
+
+	////////////////////JOINS//////////////////
+
+	/* // SQL statement to create a table
+		createTable := `
+	    CREATE TABLE IF NOT EXISTS users (
+	        id INT AUTO_INCREMENT PRIMARY KEY,
+	        name VARCHAR(255) NOT NULL
+	    );`
+
+		// Execute the statement
+		_, err = db.Exec(createTable)
+		if err != nil {
+			log.Fatal("Failed to create table:", err)
+		} else {
+			log.Println("Table created successfully")
+		} */
+	sqlStmt, _ := ioutil.ReadFile("init.sql")
+	db.Exec(string(sqlStmt))
+
+	// Inserting in a Loop (Flexible, but Slower)
+	names := []string{"Alice", "Bob", "Charlie", "Dave"}
+	stmt, err = db.Prepare("INSERT INTO users (name) VALUES (?)")
+	if err != nil {
+		log.Fatal("Prepare failed:", err)
+	}
+	defer stmt.Close()
+
+	for _, name := range names {
+		_, err := stmt.Exec(name)
+		if err != nil {
+			log.Println("Insert failed for", name, ":", err)
+		}
+	}
+	fmt.Println("Batch insert via loop done")
+
+	rows, err = db.Query(`
+    SELECT s.id, s.message, u.name 
+    FROM scores s
+    JOIN users u ON s.id = u.id`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var msg, username string
+		rows.Scan(&id, &msg, &username)
+		fmt.Println(id, msg, username)
+	}
 
 }

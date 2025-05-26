@@ -9,9 +9,10 @@ import (
 )
 
 // Define a model struct
-type Score struct {
+type Remark struct {
 	ID      int
 	Message string
+	UserID  int
 }
 
 func main() {
@@ -24,25 +25,25 @@ func main() {
 	}
 
 	// Auto-migrate the schema (optional)
-	db.AutoMigrate(&Score{})
+	db.AutoMigrate(&Remark{})
 
 	// INSERT
-	newScore := Score{Message: "Hello from GORM!"}
-	result := db.Create(&newScore)
+	newRemark := Remark{Message: "Hello from GORM!", UserID: 1}
+	result := db.Create(&newRemark)
 	if result.Error != nil {
 		log.Fatal("Insert failed:", result.Error)
 	}
-	fmt.Println("Inserted row with ID:", newScore.ID)
+	fmt.Println("Inserted row with ID:", newRemark.ID)
 
 	// UPDATE
-	newScore.Message = "Updated via GORM"
-	db.Save(&newScore)
-	fmt.Println("Updated row with ID:", newScore.ID)
+	newRemark.Message = "Updated via GORM"
+	db.Save(&newRemark)
+	fmt.Println("Updated row with ID:", newRemark.ID)
 
-	someID := newScore.ID
-	db.Delete(&Score{}, someID) // deletes by primary key
+	someID := newRemark.ID
+	db.Delete(&Remark{}, someID) // deletes by primary key
 
-	var scores []Score
+	var scores []Remark
 	result = db.Find(&scores)
 	if result.Error != nil {
 		log.Fatal("Query failed:", result.Error)
@@ -51,15 +52,15 @@ func main() {
 	for _, score := range scores {
 		fmt.Printf("Row: ID=%d, Message=%s\n", score.ID, score.Message)
 	}
-	scores = []Score{
-		{Message: "msg11"},
-		{Message: "msg21"},
-		{Message: "msg31"},
+	scores = []Remark{
+		{Message: "msg11", UserID: 1},
+		{Message: "msg21", UserID: 2},
+		{Message: "msg31", UserID: 3},
 	}
 	db.Create(&scores)
 
 	err = db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(&Score{Message: "inside GORM txn"}).Error; err != nil {
+		if err := tx.Create(&Remark{Message: "inside GORM txn", UserID: 23}).Error; err != nil {
 			return err
 		}
 		return nil // commit
@@ -67,5 +68,6 @@ func main() {
 	if err != nil {
 		log.Fatal("GORM transaction failed:", err)
 	}
+	// /////////JOINS///////////////
 
 }
